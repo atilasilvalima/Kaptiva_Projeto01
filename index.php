@@ -1,31 +1,101 @@
 <?php
 
-    $TituloPagina = "[VARIVAEL] Título da Página";
-    $NomeDaPagina = "[VARIAVEL] Relatório de Capacitados";
+    // REPORTAR ERROS
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+
+    // CONFIGURA CHARSET UTF-8 E SETA FORTALEZA COMO FUSO HORARIO
+    header("Content-type: text/html; charset=utf-8");
+    date_default_timezone_set('America/Fortaleza');
+
+    // CONEXAO COM BANCO DE DADOS
+    require_once ("./conn/conexao.php");
+
+
+    // Variáveis de texto
+    $Texto_TituloPagina = "[VARIVAEL] Título da Página";
+    $Texto_NomeDaPagina = "[VARIAVEL] Relatório de Capacitados";
+    $Texto_Tabela01 = "[VARIAVEL] - Nome da Tabela";
+
+    // Chama o Header
+    require_once("./layouts/header.php");
+
+
+    // SQL Conta Capacitados
+    $SQL_ContaCapacitados = "
+        SELECT
+            mdl_user.id
+        FROM
+            mdl_user
+            INNER JOIN
+            mdl_role_assignments
+            ON 
+                mdl_user.id = mdl_role_assignments.userid
+            INNER JOIN
+            mdl_context
+            ON 
+                mdl_role_assignments.contextid = mdl_context.id
+            INNER JOIN
+            mdl_course
+            ON 
+                mdl_context.instanceid = mdl_course.id
+            INNER JOIN
+            mdl_course_categories
+            ON 
+                mdl_course.category = mdl_course_categories.id
+    ";
+    $RES_ContaCapacitados = pg_query($conn, $SQL_ContaCapacitados);
+    $ContaCapacitados = pg_num_rows($RES_ContaCapacitados);
+
+
+    // SQL Conta Categorias
+    $SQL_ContaCategorias = "
+        SELECT
+            mdl_course_categories.name
+        FROM
+            mdl_course_categories
+    ";
+    $RES_ContaCategorias = pg_query($conn, $SQL_ContaCategorias);
+    $ContaCategorias = pg_num_rows($RES_ContaCategorias);
+
+
+
+    // SQL Lista Categorias
+    $SQL_ListaCategorias = "
+        SELECT
+            mdl_course_categories.id,
+            mdl_course_categories.name
+        FROM
+            mdl_course_categories
+        ORDER BY 
+            mdl_course_categories.name ASC
+    ";
+    $RES_ListaCategorias = pg_query($conn, $SQL_ListaCategorias);
+    $ListaCategorias = pg_num_rows($RES_ListaCategorias);
+
+
+    // SQL Total de Matriculas
+    $SQL_TotalMatriculas = "
+        SELECT
+            mdl_role_assignments.id, 
+            mdl_role_assignments.userid, 
+            mdl_course.fullname, 
+            mdl_course.category
+        FROM
+            mdl_role_assignments
+            INNER JOIN
+            mdl_context
+            ON 
+                mdl_role_assignments.contextid = mdl_context.id
+            INNER JOIN
+            mdl_course
+            ON 
+                mdl_context.instanceid = mdl_course.id                                                                  
+    ";
+    $RES_TotalMatriculas = pg_query($conn, $SQL_TotalMatriculas);
+    $TotalMatriculas = pg_num_rows($RES_TotalMatriculas);
 
 ?>
-<!DOCTYPE html>
-<html lang="pt-br">
-
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-
-    <title>SB Admin 2 - Dashboard</title>
-
-    <!-- Chama o FontAwesome -->
-    <link href="assets/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
-    <link
-        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-        rel="stylesheet">
-
-    <!-- Chama o Css -->
-    <link href="assets/css/Celepar.css" rel="stylesheet">
-
-</head>
 
 <body id="page-top">
 
@@ -46,7 +116,7 @@
                         <i class="fa fa-bars"></i>
                     </button>
 
-                    <?php echo $TituloPagina ?>
+                    <?php echo $Texto_TituloPagina ?>
 
                 </nav>
                 <!-- End of Topbar -->
@@ -56,15 +126,14 @@
 
                     <!-- Page Heading -->
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800"><?php echo $NomeDaPagina ?></h1>
-                        <!-- <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i -->
-                                <!-- class="fas fa-download fa-sm text-white-50"></i> Generate Report</a> -->
+                        <h1 class="h3 mb-0 text-gray-800"><?php echo $Texto_NomeDaPagina ?></h1>
                     </div>
 
-                    <!-- Content Row -->
+                    <!-- Row Card -->
                     <div class="row">
+                        <!-- Cards - BEGIN -->
 
-                        <!-- Earnings (Monthly) Card Example -->
+                        <!-- Colaboradores Capacitados -->
                         <div class="col-xl-6 col-md-6 mb-4">
                             <div class="card border-left-primary shadow h-100 py-2">
                                 <div class="card-body">
@@ -72,7 +141,7 @@
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                                                 Colaboradores Capacitados</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">1234</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $ContaCapacitados ?></div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-users fa-2x text-gray-300"></i>
@@ -82,7 +151,7 @@
                             </div>
                         </div>
 
-                        <!-- Earnings (Monthly) Card Example -->
+                        <!-- Cursos -->
                         <div class="col-xl-6 col-md-6 mb-4">
                             <div class="card border-left-success shadow h-100 py-2">
                                 <div class="card-body">
@@ -90,7 +159,7 @@
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
                                                 Cursos</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">1234</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $ContaCategorias ?></div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-school fa-2x text-gray-300"></i>
@@ -99,87 +168,79 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Earnings (Monthly) Card Example -->
-                        <!-- <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-info shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Tasks
-                                            </div>
-                                            <div class="row no-gutters align-items-center">
-                                                <div class="col-auto">
-                                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">50%</div>
-                                                </div>
-                                                <div class="col">
-                                                    <div class="progress progress-sm mr-2">
-                                                        <div class="progress-bar bg-info" role="progressbar"
-                                                            style="width: 50%" aria-valuenow="50" aria-valuemin="0"
-                                                            aria-valuemax="100"></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> -->
-
-                        <!-- Pending Requests Card Example -->
-                        <!-- <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-warning shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                Pending Requests</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">18</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-comments fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> -->
+                        <!-- Cards - END -->
                     </div>
 
-                    <!-- Content Row -->
-
+                    <!-- Row Dados Categorias - BEGIN -->
                     <div class="row">
 
                         <!-- Area Chart -->
-                        <div class="col-xl-8 col-lg-7">
+                        <div class="col-xl-12 col-lg-12">
                             <div class="card shadow mb-4">
-                                <!-- Card Header - Dropdown -->
-                                <div
-                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Earnings Overview</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                            aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">Dropdown Header:</div>
-                                            <a class="dropdown-item" href="#">Action</a>
-                                            <a class="dropdown-item" href="#">Another action</a>
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="#">Something else here</a>
+
+                                <!-- Tabela de Dado - BEGIN -->
+                                <div class="card shadow mb-4">
+                                    <div class="card-header py-3">
+                                        <h6 class="m-0 font-weight-bold text-primary"><?php echo $Texto_Tabela01 ?></h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive table-hover">
+                                            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Escola</th>
+                                                        <th>Qtd. Matrículas</th>
+                                                        <th>% Matrículas</th>
+                                                        <th>Qtd. Concluídos</th>
+                                                        <th>% Concluídos</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                        <?php
+                                                            while ($RowCategorias = pg_fetch_array($RES_ListaCategorias)) {                                                                
+                                                                echo "<tr>";
+                                                                    $Id_Categoria = $RowCategorias['id'];
+                                                                    echo "<td>" . $RowCategorias['name']. "</td>";
+                                                                    
+                                                                    // SQL Conta Matriculas Por Categoria
+                                                                    $SQL_ContaMatriculas = "
+                                                                        SELECT
+                                                                            mdl_role_assignments.id, 
+                                                                            mdl_role_assignments.userid, 
+                                                                            mdl_course.fullname, 
+                                                                            mdl_course.category
+                                                                        FROM
+                                                                            mdl_role_assignments
+                                                                            INNER JOIN
+                                                                            mdl_context
+                                                                            ON 
+                                                                                mdl_role_assignments.contextid = mdl_context.id
+                                                                            INNER JOIN
+                                                                            mdl_course
+                                                                            ON 
+                                                                                mdl_context.instanceid = mdl_course.id
+                                                                        WHERE category = $Id_Categoria                                                                      
+                                                                    ";
+                                                                    $RES_ContaMatriculas = pg_query($conn, $SQL_ContaMatriculas);
+                                                                    $ContaMatriculas = pg_num_rows($RES_ContaMatriculas);
+
+                                                                    echo "<td>".$ContaMatriculas."</td>";
+
+                                                                    // % de Matriculas com base no total
+                                                                    $PorcMatricula = (100*$ContaMatriculas)/$TotalMatriculas;
+                                                                    $PorcMatricula = number_format($PorcMatricula,2,",",".");
+                                                                    echo "<td>".$PorcMatricula."%</td>";
+                                                                    echo "<td>CC</td>";
+                                                                    echo "<td>DDDDDD</td>";
+                                                            }
+                                                            echo "</tr>";
+                                                        ?>
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
                                 </div>
-                                <!-- Card Body -->
-                                <div class="card-body">
-                                    <div class="chart-area">
-                                        <canvas id="myAreaChart"></canvas>
-                                    </div>
-                                </div>
+                                <!-- Tabela de Dado - END -->
                             </div>
                         </div>
 
@@ -225,6 +286,7 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Row - Dados Categorias - END -->
 
                     <!-- Content Row -->
                     <div class="row">
