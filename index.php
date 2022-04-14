@@ -11,11 +11,17 @@
     // CONEXAO COM BANCO DE DADOS
     require_once ("./conn/conexao.php");
 
+    // Conecta ao Banco de dados usando a API do Moodle
+    require_once ("../config.php");
+    global $CFG;
+    global $DB;
+
 
     // Variáveis de texto
     $Texto_TituloPagina = "[VARIVAEL] Título da Página";
     $Texto_NomeDaPagina = "[VARIAVEL] Relatório de Capacitados";
-    $Texto_Tabela01 = "[VARIAVEL] - Nome da Tabela";
+    $Texto_Tabela01 = "[VARIAVEL] - Nome da Tabela 01";
+    $Texto_Tabela02 = "[VARIAVEL] - Nome da Tabela 02";
 
     // Chama o Header
     require_once("./layouts/header.php");
@@ -24,7 +30,7 @@
     // SQL Conta Capacitados
     $SQL_ContaCapacitados = "
         SELECT
-            mdl_user.id
+            COUNT (mdl_user.id)
         FROM
             mdl_user
             INNER JOIN
@@ -44,19 +50,17 @@
             ON 
                 mdl_course.category = mdl_course_categories.id
     ";
-    $RES_ContaCapacitados = pg_query($conn, $SQL_ContaCapacitados);
-    $ContaCapacitados = pg_num_rows($RES_ContaCapacitados);
+    $ContaCapacitados = $DB->count_records_sql($SQL_ContaCapacitados);
 
 
     // SQL Conta Categorias
     $SQL_ContaCategorias = "
         SELECT
-            mdl_course_categories.name
+            COUNT(mdl_course_categories.name)
         FROM
             mdl_course_categories
     ";
-    $RES_ContaCategorias = pg_query($conn, $SQL_ContaCategorias);
-    $ContaCategorias = pg_num_rows($RES_ContaCategorias);
+    $ContaCategorias = $DB->count_records_sql($SQL_ContaCategorias);
 
 
 
@@ -72,6 +76,19 @@
     ";
     $RES_ListaCategorias = pg_query($conn, $SQL_ListaCategorias);
     $ListaCategorias = pg_num_rows($RES_ListaCategorias);
+
+
+    // SQL Lista Categorias Horas
+    $SQL_ListaCategoriasHoras = "
+            SELECT
+                mdl_course_categories.id,
+                mdl_course_categories.name
+            FROM
+                mdl_course_categories
+            ORDER BY 
+                mdl_course_categories.name ASC
+        ";
+    $RES_ListaCategoriasHoras = pg_query($conn, $SQL_ListaCategoriasHoras);
 
 
     // SQL Total de Matriculas
@@ -94,6 +111,43 @@
     ";
     $RES_TotalMatriculas = pg_query($conn, $SQL_TotalMatriculas);
     $TotalMatriculas = pg_num_rows($RES_TotalMatriculas);
+
+
+    // SQL Conta Total de Concluídos
+    $SQL_ContaTotalConcluidos = "
+        SELECT
+            mdl_course_categories.id
+        FROM
+            mdl_grade_items
+            INNER JOIN
+            mdl_grade_grades
+            ON 
+                mdl_grade_items.id = mdl_grade_grades.itemid
+            INNER JOIN
+            mdl_course
+            ON 
+                mdl_grade_items.courseid = mdl_course.id
+            INNER JOIN
+            mdl_course_categories
+            ON 
+                mdl_course.category = mdl_course_categories.id
+        WHERE
+            mdl_grade_items.itemtype = 'course' 
+        ";
+    $RES_ContaTotalConcluidos = pg_query($conn, $SQL_ContaTotalConcluidos);
+    $ContaTotalConcluidos = pg_num_rows($RES_ContaTotalConcluidos);
+
+    // Consultas testes - BEGIN
+//    $ContaUser = $DB->count_records('user');
+//    echo $ContaUser;
+
+
+//    $ListaDeCategorias = $DB -> get_record ( 'course_categories');
+//    echo $ListaDeCategorias;
+
+
+
+    // Consultas testes - END
 
 ?>
 
@@ -128,6 +182,24 @@
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         <h1 class="h3 mb-0 text-gray-800"><?php echo $Texto_NomeDaPagina ?></h1>
                     </div>
+
+                    <div class="row">
+                        <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+                            <div class="input-group">
+                                <label>Período</label> &nbsp
+                                <input id="date" type="date">
+                                &nbsp a &nbsp
+                                <input id="date" type="date">
+                                &nbsp
+                                &nbsp
+                                <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-chart-line fa-sm text-white-10"></i> Visualizar Dados</a>
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                    <br>
 
                     <!-- Row Card -->
                     <div class="row">
@@ -171,10 +243,10 @@
                         <!-- Cards - END -->
                     </div>
 
-                    <!-- Row Dados Categorias - BEGIN -->
+                    <!-- Row Dados Concluídos - BEGIN -->
                     <div class="row">
 
-                        <!-- Area Chart -->
+                        <!-- Tabela Concluídos -->
                         <div class="col-xl-12 col-lg-12">
                             <div class="card shadow mb-4">
 
@@ -230,8 +302,37 @@
                                                                     $PorcMatricula = (100*$ContaMatriculas)/$TotalMatriculas;
                                                                     $PorcMatricula = number_format($PorcMatricula,2,",",".");
                                                                     echo "<td>".$PorcMatricula."%</td>";
-                                                                    echo "<td>CC</td>";
-                                                                    echo "<td>DDDDDD</td>";
+
+                                                                // SQL Conta Concluídos
+                                                                $SQL_ContaConcluidosCategoria = "
+                                                                    SELECT
+                                                                        mdl_course_categories.id
+                                                                    FROM
+                                                                        mdl_grade_items
+                                                                        INNER JOIN
+                                                                        mdl_grade_grades
+                                                                        ON 
+                                                                            mdl_grade_items.id = mdl_grade_grades.itemid
+                                                                        INNER JOIN
+                                                                        mdl_course
+                                                                        ON 
+                                                                            mdl_grade_items.courseid = mdl_course.id
+                                                                        INNER JOIN
+                                                                        mdl_course_categories
+                                                                        ON 
+                                                                            mdl_course.category = mdl_course_categories.id
+                                                                    WHERE
+                                                                        mdl_grade_items.itemtype = 'course' AND
+                                                                        mdl_course_categories.id = $Id_Categoria   
+                                                                ";
+                                                                $RES_ContaConcluidosCategoria = pg_query($conn, $SQL_ContaConcluidosCategoria);
+                                                                $ContaConcluidosCategoria = pg_num_rows($RES_ContaConcluidosCategoria);
+                                                                    echo "<td>".$ContaConcluidosCategoria."</td>";
+
+                                                                // % de Concluídos com base no total
+                                                                $PorcConcluidos = (100*$ContaConcluidosCategoria)/$ContaTotalConcluidos;
+                                                                $PorcConcluidos = number_format($PorcConcluidos,2,",",".");
+                                                                echo "<td>".$PorcConcluidos."%</td>";
                                                             }
                                                             echo "</tr>";
                                                         ?>
@@ -244,202 +345,53 @@
                             </div>
                         </div>
 
-                        <!-- Pie Chart -->
-                        <div class="col-xl-4 col-lg-5">
-                            <div class="card shadow mb-4">
-                                <!-- Card Header - Dropdown -->
-                                <div
-                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Revenue Sources</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                            aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">Dropdown Header:</div>
-                                            <a class="dropdown-item" href="#">Action</a>
-                                            <a class="dropdown-item" href="#">Another action</a>
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="#">Something else here</a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Card Body -->
-                                <div class="card-body">
-                                    <div class="chart-pie pt-4 pb-2">
-                                        <canvas id="myPieChart"></canvas>
-                                    </div>
-                                    <div class="mt-4 text-center small">
-                                        <span class="mr-2">
-                                            <i class="fas fa-circle text-primary"></i> Direct
-                                        </span>
-                                        <span class="mr-2">
-                                            <i class="fas fa-circle text-success"></i> Social
-                                        </span>
-                                        <span class="mr-2">
-                                            <i class="fas fa-circle text-info"></i> Referral
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
-                    <!-- Row - Dados Categorias - END -->
+                    <!-- Row - Dados Concluídos - END -->
 
-                    <!-- Content Row -->
+                    <!-- Row Dados Horas - BEGIN -->
                     <div class="row">
 
-                        <!-- Content Column -->
-                        <div class="col-lg-6 mb-4">
-
-                            <!-- Project Card Example -->
+                        <!-- Tabela Concluídos -->
+                        <div class="col-xl-12 col-lg-12">
                             <div class="card shadow mb-4">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Projects</h6>
-                                </div>
-                                <div class="card-body">
-                                    <h4 class="small font-weight-bold">Server Migration <span
-                                            class="float-right">20%</span></h4>
-                                    <div class="progress mb-4">
-                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 20%"
-                                            aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <h4 class="small font-weight-bold">Sales Tracking <span
-                                            class="float-right">40%</span></h4>
-                                    <div class="progress mb-4">
-                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 40%"
-                                            aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <h4 class="small font-weight-bold">Customer Database <span
-                                            class="float-right">60%</span></h4>
-                                    <div class="progress mb-4">
-                                        <div class="progress-bar" role="progressbar" style="width: 60%"
-                                            aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <h4 class="small font-weight-bold">Payout Details <span
-                                            class="float-right">80%</span></h4>
-                                    <div class="progress mb-4">
-                                        <div class="progress-bar bg-info" role="progressbar" style="width: 80%"
-                                            aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <h4 class="small font-weight-bold">Account Setup <span
-                                            class="float-right">Complete!</span></h4>
-                                    <div class="progress">
-                                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%"
-                                            aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <!-- Color System -->
-                            <div class="row">
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-primary text-white shadow">
-                                        <div class="card-body">
-                                            Primary
-                                            <div class="text-white-50 small">#4e73df</div>
+                                <!-- Tabela de Dado - BEGIN -->
+                                <div class="card shadow mb-4">
+                                    <div class="card-header py-3">
+                                        <h6 class="m-0 font-weight-bold text-primary"><?php echo $Texto_Tabela02 ?></h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive table-hover">
+                                            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                                <thead>
+                                                <tr>
+                                                    <th>Escola</th>
+                                                    <th>Qtd. Horas Treinadas</th>
+                                                    <th>% Horas Treinadas</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php
+                                                        while ($RowCategoriasHoras = pg_fetch_array($RES_ListaCategoriasHoras)) {
+                                                            echo "<tr>";
+                                                            $Id_Categoria = $RowCategoriasHoras['id'];
+                                                            echo "<td>" . $RowCategoriasHoras['name']. "</td>";
+                                                            echo "<td> 12h </td>";
+                                                            echo "<td> 5% </td>";
+                                                        }
+                                                        echo "</tr>";
+                                                    ?>
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-success text-white shadow">
-                                        <div class="card-body">
-                                            Success
-                                            <div class="text-white-50 small">#1cc88a</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-info text-white shadow">
-                                        <div class="card-body">
-                                            Info
-                                            <div class="text-white-50 small">#36b9cc</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-warning text-white shadow">
-                                        <div class="card-body">
-                                            Warning
-                                            <div class="text-white-50 small">#f6c23e</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-danger text-white shadow">
-                                        <div class="card-body">
-                                            Danger
-                                            <div class="text-white-50 small">#e74a3b</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-secondary text-white shadow">
-                                        <div class="card-body">
-                                            Secondary
-                                            <div class="text-white-50 small">#858796</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-light text-black shadow">
-                                        <div class="card-body">
-                                            Light
-                                            <div class="text-black-50 small">#f8f9fc</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-dark text-white shadow">
-                                        <div class="card-body">
-                                            Dark
-                                            <div class="text-white-50 small">#5a5c69</div>
-                                        </div>
-                                    </div>
-                                </div>
+                                <!-- Tabela de Dado - END -->
                             </div>
-
                         </div>
 
-                        <div class="col-lg-6 mb-4">
-
-                            <!-- Illustrations -->
-                            <div class="card shadow mb-4">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Illustrations</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="text-center">
-                                        <img class="img-fluid px-3 px-sm-4 mt-3 mb-4" style="width: 25rem;"
-                                            src="img/undraw_posting_photo.svg" alt="...">
-                                    </div>
-                                    <p>Add some quality, svg illustrations to your project courtesy of <a
-                                            target="_blank" rel="nofollow" href="https://undraw.co/">unDraw</a>, a
-                                        constantly updated collection of beautiful svg images that you can use
-                                        completely free and without attribution!</p>
-                                    <a target="_blank" rel="nofollow" href="https://undraw.co/">Browse Illustrations on
-                                        unDraw &rarr;</a>
-                                </div>
-                            </div>
-
-                            <!-- Approach -->
-                            <div class="card shadow mb-4">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Development Approach</h6>
-                                </div>
-                                <div class="card-body">
-                                    <p>SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                        CSS bloat and poor page performance. Custom CSS classes are used to create
-                                        custom components and custom utility classes.</p>
-                                    <p class="mb-0">Before working with this theme, you should become familiar with the
-                                        Bootstrap framework, especially the utility classes.</p>
-                                </div>
-                            </div>
-
-                        </div>
                     </div>
+                    <!-- Row - Dados Horas - END -->
 
                 </div>
                 <!-- /.container-fluid -->
