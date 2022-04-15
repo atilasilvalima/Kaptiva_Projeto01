@@ -26,8 +26,7 @@
     // Chama o Header
     require_once("./layouts/header.php");
 
-
-    // SQL Conta Capacitados
+    // SQL Conta Capacitados OK
     $SQL_ContaCapacitados = "
         SELECT
             COUNT (mdl_user.id)
@@ -53,7 +52,7 @@
     $ContaCapacitados = $DB->count_records_sql($SQL_ContaCapacitados);
 
 
-    // SQL Conta Categorias
+    // SQL Conta Categorias OK
     $SQL_ContaCategorias = "
         SELECT
             COUNT(mdl_course_categories.name)
@@ -63,41 +62,23 @@
     $ContaCategorias = $DB->count_records_sql($SQL_ContaCategorias);
 
 
-
-    // SQL Lista Categorias
+    // SQL Lista Categorias OK
     $SQL_ListaCategorias = "
         SELECT
             mdl_course_categories.id,
             mdl_course_categories.name
         FROM
             mdl_course_categories
-        ORDER BY 
+        ORDER BY
             mdl_course_categories.name ASC
     ";
-    $RES_ListaCategorias = pg_query($conn, $SQL_ListaCategorias);
-    $ListaCategorias = pg_num_rows($RES_ListaCategorias);
+    $RES_ListaCategorias = $DB->get_records_sql($SQL_ListaCategorias);
 
 
-    // SQL Lista Categorias Horas
-    $SQL_ListaCategoriasHoras = "
-            SELECT
-                mdl_course_categories.id,
-                mdl_course_categories.name
-            FROM
-                mdl_course_categories
-            ORDER BY 
-                mdl_course_categories.name ASC
-        ";
-    $RES_ListaCategoriasHoras = pg_query($conn, $SQL_ListaCategoriasHoras);
-
-
-    // SQL Total de Matriculas
+    // SQL Total de Matriculas OK
     $SQL_TotalMatriculas = "
         SELECT
-            mdl_role_assignments.id, 
-            mdl_role_assignments.userid, 
-            mdl_course.fullname, 
-            mdl_course.category
+            COUNT(mdl_role_assignments.id)
         FROM
             mdl_role_assignments
             INNER JOIN
@@ -109,14 +90,13 @@
             ON 
                 mdl_context.instanceid = mdl_course.id                                                                  
     ";
-    $RES_TotalMatriculas = pg_query($conn, $SQL_TotalMatriculas);
-    $TotalMatriculas = pg_num_rows($RES_TotalMatriculas);
+    $TotalMatriculas = $DB->count_records_sql($SQL_TotalMatriculas);
 
 
-    // SQL Conta Total de Concluídos
+    // SQL Conta Total de Concluídos OK
     $SQL_ContaTotalConcluidos = "
         SELECT
-            mdl_course_categories.id
+            COUNT(mdl_course_categories.id)
         FROM
             mdl_grade_items
             INNER JOIN
@@ -133,21 +113,24 @@
                 mdl_course.category = mdl_course_categories.id
         WHERE
             mdl_grade_items.itemtype = 'course' 
-        ";
-    $RES_ContaTotalConcluidos = pg_query($conn, $SQL_ContaTotalConcluidos);
-    $ContaTotalConcluidos = pg_num_rows($RES_ContaTotalConcluidos);
-
-    // Consultas testes - BEGIN
-//    $ContaUser = $DB->count_records('user');
-//    echo $ContaUser;
+    ";
+    $ContaTotalConcluidos = $DB->count_records_sql($SQL_ContaTotalConcluidos);
 
 
-//    $ListaDeCategorias = $DB -> get_record ( 'course_categories');
-//    echo $ListaDeCategorias;
+    // SQL Lista Categorias Horas OK
+    $SQL_ListaCategoriasHoras = "
+            SELECT
+                mdl_course_categories.id,
+                mdl_course_categories.name
+            FROM
+                mdl_course_categories
+            ORDER BY 
+                mdl_course_categories.name ASC
+    ";
+//    $RES_ListaCategoriasHoras = pg_query($conn, $SQL_ListaCategoriasHoras);
+    $RES_ListaCategoriasHoras = $DB->get_records_sql($SQL_ListaCategorias);
 
 
-
-    // Consultas testes - END
 
 ?>
 
@@ -184,18 +167,24 @@
                     </div>
 
                     <div class="row">
-                        <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+                        <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search" method="POST">
                             <div class="input-group">
                                 <label>Período</label> &nbsp
-                                <input id="date" type="date">
+                                <input id="date" type="date" name="DataInicio">
                                 &nbsp a &nbsp
-                                <input id="date" type="date">
+                                <input id="date" type="date" name="DataTermino">
                                 &nbsp
                                 &nbsp
-                                <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-chart-line fa-sm text-white-10"></i> Visualizar Dados</a>
+                                <div><button name="submit" type="submit" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-chart-line fa-sm text-white-10"></i> Visualizar Dados</button></div>
                             </div>
 
                         </form>
+
+                        <?php
+                            // Converte a data em timestamp
+                            $DataInicio = strtotime($_POST['DataInicio']);
+                            $DataTermino = strtotime($_POST['DataTermino']);
+                        ?>
 
                     </div>
 
@@ -269,71 +258,67 @@
                                                 </thead>
                                                 <tbody>
                                                         <?php
-                                                            while ($RowCategorias = pg_fetch_array($RES_ListaCategorias)) {                                                                
+//                                                            while ($RowCategorias = pg_fetch_array($RES_ListaCategorias)) {
+                                                            foreach ($RES_ListaCategorias as $Categoria) {
                                                                 echo "<tr>";
-                                                                    $Id_Categoria = $RowCategorias['id'];
-                                                                    echo "<td>" . $RowCategorias['name']. "</td>";
-                                                                    
-                                                                    // SQL Conta Matriculas Por Categoria
-                                                                    $SQL_ContaMatriculas = "
-                                                                        SELECT
-                                                                            mdl_role_assignments.id, 
-                                                                            mdl_role_assignments.userid, 
-                                                                            mdl_course.fullname, 
-                                                                            mdl_course.category
-                                                                        FROM
-                                                                            mdl_role_assignments
-                                                                            INNER JOIN
-                                                                            mdl_context
-                                                                            ON 
-                                                                                mdl_role_assignments.contextid = mdl_context.id
-                                                                            INNER JOIN
-                                                                            mdl_course
-                                                                            ON 
-                                                                                mdl_context.instanceid = mdl_course.id
-                                                                        WHERE category = $Id_Categoria                                                                      
-                                                                    ";
-                                                                    $RES_ContaMatriculas = pg_query($conn, $SQL_ContaMatriculas);
-                                                                    $ContaMatriculas = pg_num_rows($RES_ContaMatriculas);
+                                                                $Id_Categoria = $Categoria->id;
+                                                                echo "<td>" . $Categoria->name. "</td>";
 
-                                                                    echo "<td>".$ContaMatriculas."</td>";
+                                                                // SQL Conta Matriculas Por Categoria OK
+                                                                $SQL_ContaMatriculas = "
+                                                                    SELECT
+                                                                        COUNT(mdl_role_assignments.id)
+                                                                    FROM
+                                                                        mdl_role_assignments
+                                                                        INNER JOIN
+                                                                        mdl_context
+                                                                        ON
+                                                                            mdl_role_assignments.contextid = mdl_context.id
+                                                                        INNER JOIN
+                                                                        mdl_course
+                                                                        ON
+                                                                            mdl_context.instanceid = mdl_course.id
+                                                                    WHERE category = $Id_Categoria
+                                                                ";
+                                                                $ContaMatriculas = $DB->count_records_sql($SQL_ContaMatriculas);
 
-                                                                    // % de Matriculas com base no total
-                                                                    $PorcMatricula = (100*$ContaMatriculas)/$TotalMatriculas;
-                                                                    $PorcMatricula = number_format($PorcMatricula,2,",",".");
-                                                                    echo "<td>".$PorcMatricula."%</td>";
+                                                                echo "<td>".$ContaMatriculas."</td>";
 
-                                                                // SQL Conta Concluídos
+                                                                // % de Matriculas com base no total
+                                                                $PorcMatricula = (100*$ContaMatriculas)/$TotalMatriculas;
+                                                                $PorcMatricula = number_format($PorcMatricula,2,",",".");
+                                                                echo "<td>".$PorcMatricula."%</td>";
+
+                                                                // SQL Conta Concluídos OK
                                                                 $SQL_ContaConcluidosCategoria = "
                                                                     SELECT
-                                                                        mdl_course_categories.id
+                                                                        COUNT(mdl_course_categories.id)
                                                                     FROM
                                                                         mdl_grade_items
                                                                         INNER JOIN
                                                                         mdl_grade_grades
-                                                                        ON 
+                                                                        ON
                                                                             mdl_grade_items.id = mdl_grade_grades.itemid
                                                                         INNER JOIN
                                                                         mdl_course
-                                                                        ON 
+                                                                        ON
                                                                             mdl_grade_items.courseid = mdl_course.id
                                                                         INNER JOIN
                                                                         mdl_course_categories
-                                                                        ON 
+                                                                        ON
                                                                             mdl_course.category = mdl_course_categories.id
                                                                     WHERE
                                                                         mdl_grade_items.itemtype = 'course' AND
-                                                                        mdl_course_categories.id = $Id_Categoria   
+                                                                        mdl_course_categories.id = $Id_Categoria
                                                                 ";
-                                                                $RES_ContaConcluidosCategoria = pg_query($conn, $SQL_ContaConcluidosCategoria);
-                                                                $ContaConcluidosCategoria = pg_num_rows($RES_ContaConcluidosCategoria);
-                                                                    echo "<td>".$ContaConcluidosCategoria."</td>";
+                                                                $ContaConcluidosCategoria = $DB->count_records_sql($SQL_ContaConcluidosCategoria);
+                                                                echo "<td>".$ContaConcluidosCategoria."</td>";
 
                                                                 // % de Concluídos com base no total
                                                                 $PorcConcluidos = (100*$ContaConcluidosCategoria)/$ContaTotalConcluidos;
                                                                 $PorcConcluidos = number_format($PorcConcluidos,2,",",".");
                                                                 echo "<td>".$PorcConcluidos."%</td>";
-                                                            }
+                                                        }
                                                             echo "</tr>";
                                                         ?>
                                                 </tbody>
@@ -372,10 +357,11 @@
                                                 </thead>
                                                 <tbody>
                                                     <?php
-                                                        while ($RowCategoriasHoras = pg_fetch_array($RES_ListaCategoriasHoras)) {
+//                                                        while ($RowCategoriasHoras = pg_fetch_array($RES_ListaCategoriasHoras)) {
+                                                        foreach ($RES_ListaCategoriasHoras as $ListaCategoriasHoras) {
                                                             echo "<tr>";
-                                                            $Id_Categoria = $RowCategoriasHoras['id'];
-                                                            echo "<td>" . $RowCategoriasHoras['name']. "</td>";
+                                                            $Id_Categoria = $ListaCategoriasHoras->id;
+                                                            echo "<td>" . $ListaCategoriasHoras->name. "</td>";
                                                             echo "<td> 12h </td>";
                                                             echo "<td> 5% </td>";
                                                         }
@@ -409,47 +395,14 @@
     </div>
     <!-- End of Page Wrapper -->
 
-    <!-- Scroll to Top Button-->
+    <!-- Scroll to Top Button -->
     <a class="scroll-to-top rounded" href="#page-top">
         <i class="fas fa-angle-up"></i>
     </a>
 
-    <!-- Logout Modal-->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" href="login.html">Logout</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bootstrap core JavaScript-->
-    <script src="assets/jquery/jquery.min.js"></script>
-    <script src="assets/bootstrap/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Core plugin JavaScript-->
-    <script src="assets/jquery-easing/jquery.easing.min.js"></script>
-
-    <!-- Custom scripts for all pages-->
-    <script src="assets/js/sb-admin-2.min.js"></script>
-
-    <!-- Page level plugins -->
-    <script src="assets/chart.js/Chart.min.js"></script>
-
-    <!-- Page level custom scripts -->
-    <script src="assets/demo/chart-area-demo.js"></script>
-    <script src="assets/demo/chart-pie-demo.js"></script>
+    <!-- Footer JS -->
+    <?php require_once("./layouts/footer_js.php"); ?>
+    <!-- Footer JS -->
 
 </body>
 
