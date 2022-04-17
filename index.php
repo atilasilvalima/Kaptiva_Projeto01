@@ -16,7 +16,6 @@
     global $CFG;
     global $DB;
 
-
     // Variáveis de texto
     $Texto_TituloPagina = "[VARIVAEL] Título da Página";
     $Texto_NomeDaPagina = "[VARIAVEL] Relatório de Capacitados";
@@ -25,112 +24,6 @@
 
     // Chama o Header
     require_once("./layouts/header.php");
-
-    // SQL Conta Capacitados OK
-    $SQL_ContaCapacitados = "
-        SELECT
-            COUNT (mdl_user.id)
-        FROM
-            mdl_user
-            INNER JOIN
-            mdl_role_assignments
-            ON 
-                mdl_user.id = mdl_role_assignments.userid
-            INNER JOIN
-            mdl_context
-            ON 
-                mdl_role_assignments.contextid = mdl_context.id
-            INNER JOIN
-            mdl_course
-            ON 
-                mdl_context.instanceid = mdl_course.id
-            INNER JOIN
-            mdl_course_categories
-            ON 
-                mdl_course.category = mdl_course_categories.id
-    ";
-    $ContaCapacitados = $DB->count_records_sql($SQL_ContaCapacitados);
-
-
-    // SQL Conta Categorias OK
-    $SQL_ContaCategorias = "
-        SELECT
-            COUNT(mdl_course_categories.name)
-        FROM
-            mdl_course_categories
-    ";
-    $ContaCategorias = $DB->count_records_sql($SQL_ContaCategorias);
-
-
-    // SQL Lista Categorias OK
-    $SQL_ListaCategorias = "
-        SELECT
-            mdl_course_categories.id,
-            mdl_course_categories.name
-        FROM
-            mdl_course_categories
-        ORDER BY
-            mdl_course_categories.name ASC
-    ";
-    $RES_ListaCategorias = $DB->get_records_sql($SQL_ListaCategorias);
-
-
-    // SQL Total de Matriculas OK
-    $SQL_TotalMatriculas = "
-        SELECT
-            COUNT(mdl_role_assignments.id)
-        FROM
-            mdl_role_assignments
-            INNER JOIN
-            mdl_context
-            ON 
-                mdl_role_assignments.contextid = mdl_context.id
-            INNER JOIN
-            mdl_course
-            ON 
-                mdl_context.instanceid = mdl_course.id                                                                  
-    ";
-    $TotalMatriculas = $DB->count_records_sql($SQL_TotalMatriculas);
-
-
-    // SQL Conta Total de Concluídos OK
-    $SQL_ContaTotalConcluidos = "
-        SELECT
-            COUNT(mdl_course_categories.id)
-        FROM
-            mdl_grade_items
-            INNER JOIN
-            mdl_grade_grades
-            ON 
-                mdl_grade_items.id = mdl_grade_grades.itemid
-            INNER JOIN
-            mdl_course
-            ON 
-                mdl_grade_items.courseid = mdl_course.id
-            INNER JOIN
-            mdl_course_categories
-            ON 
-                mdl_course.category = mdl_course_categories.id
-        WHERE
-            mdl_grade_items.itemtype = 'course' 
-    ";
-    $ContaTotalConcluidos = $DB->count_records_sql($SQL_ContaTotalConcluidos);
-
-
-    // SQL Lista Categorias Horas OK
-    $SQL_ListaCategoriasHoras = "
-            SELECT
-                mdl_course_categories.id,
-                mdl_course_categories.name
-            FROM
-                mdl_course_categories
-            ORDER BY 
-                mdl_course_categories.name ASC
-    ";
-//    $RES_ListaCategoriasHoras = pg_query($conn, $SQL_ListaCategoriasHoras);
-    $RES_ListaCategoriasHoras = $DB->get_records_sql($SQL_ListaCategorias);
-
-
 
 ?>
 
@@ -183,7 +76,114 @@
                         <?php
                             // Converte a data em timestamp
                             $DataInicio = strtotime($_POST['DataInicio']);
+//                            echo "<br>";
                             $DataTermino = strtotime($_POST['DataTermino']);
+
+                            // SQL Conta Capacitados
+                            $SQL_ContaCapacitados = "
+                            SELECT
+                                COUNT (mdl_user.id)
+                            FROM
+                                mdl_user
+                                INNER JOIN
+                                mdl_role_assignments
+                                ON 
+                                    mdl_user.id = mdl_role_assignments.userid
+                                INNER JOIN
+                                mdl_context
+                                ON 
+                                    mdl_role_assignments.contextid = mdl_context.id
+                                INNER JOIN
+                                mdl_course
+                                ON 
+                                    mdl_context.instanceid = mdl_course.id
+                                INNER JOIN
+                                mdl_course_categories
+                                ON 
+                                    mdl_course.category = mdl_course_categories.id
+                            WHERE
+                                mdl_role_assignments.timemodified BETWEEN '$DataInicio' AND '$DataTermino'
+                            ";
+                            $ContaCapacitados = $DB->count_records_sql($SQL_ContaCapacitados);
+
+
+                            // SQL Conta Categorias
+                            $SQL_ContaCategorias = "
+                                SELECT
+                                    COUNT(mdl_course_categories.name)
+                                FROM
+                                    mdl_course_categories
+                            ";
+                            $ContaCategorias = $DB->count_records_sql($SQL_ContaCategorias);
+
+
+                            // SQL Lista Categorias
+                            $SQL_ListaCategorias = "
+                            SELECT
+                                mdl_course_categories.id,
+                                mdl_course_categories.name
+                            FROM
+                                mdl_course_categories
+                            ORDER BY
+                                mdl_course_categories.name ASC
+                            ";
+                            $RES_ListaCategorias = $DB->get_records_sql($SQL_ListaCategorias);
+
+
+                            // SQL Total de Matriculas
+                            $SQL_TotalMatriculas = "
+                            SELECT
+                                COUNT(mdl_role_assignments.id)
+                            FROM
+                                mdl_role_assignments
+                                INNER JOIN
+                                mdl_context
+                                ON 
+                                    mdl_role_assignments.contextid = mdl_context.id
+                                INNER JOIN
+                                mdl_course
+                                ON 
+                                    mdl_context.instanceid = mdl_course.id                                                                  
+                            ";
+                            $TotalMatriculas = $DB->count_records_sql($SQL_TotalMatriculas);
+
+
+                            // SQL Conta Total de Concluídos
+                            $SQL_ContaTotalConcluidos = "
+                            SELECT
+                                COUNT(mdl_course_categories.id)
+                            FROM
+                                mdl_grade_items
+                                INNER JOIN
+                                mdl_grade_grades
+                                ON 
+                                    mdl_grade_items.id = mdl_grade_grades.itemid
+                                INNER JOIN
+                                mdl_course
+                                ON 
+                                    mdl_grade_items.courseid = mdl_course.id
+                                INNER JOIN
+                                mdl_course_categories
+                                ON 
+                                    mdl_course.category = mdl_course_categories.id
+                            WHERE
+                                mdl_grade_items.itemtype = 'course' 
+                            ";
+                            $ContaTotalConcluidos = $DB->count_records_sql($SQL_ContaTotalConcluidos);
+
+
+                            // SQL Lista Categorias Horas
+                            $SQL_ListaCategoriasHoras = "
+                            SELECT
+                                mdl_course_categories.id,
+                                mdl_course_categories.name
+                            FROM
+                                mdl_course_categories
+                            ORDER BY 
+                                mdl_course_categories.name ASC
+                            ";
+                            $RES_ListaCategoriasHoras = $DB->get_records_sql($SQL_ListaCategorias);
+
                         ?>
 
                     </div>
