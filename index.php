@@ -22,38 +22,32 @@
     $Texto_Tabela01 = "[VARIAVEL] - Nome da Tabela 01";
     $Texto_Tabela02 = "[VARIAVEL] - Nome da Tabela 02";
 
+    $TextoSemData = "Sem período selecionado";
+
     // Chama o Header
     require_once("./layouts/header.php");
 
 ?>
 
 <body id="page-top">
-
-    <!-- Page Wrapper -->
+    <!-- Wrapper -->
     <div id="wrapper">
-
         <!-- Content Wrapper -->
         <div id="content-wrapper" class="d-flex flex-column">
-
             <!-- Main Content -->
             <div id="content">
-
                 <!-- Topbar -->
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow BarraSuperior">
-
                     <!-- Sidebar Toggle (Topbar) -->
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
                     </button>
-
                     <?php echo $Texto_TituloPagina ?>
-
                 </nav>
                 <!-- End of Topbar -->
 
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
-
                     <!-- Page Heading -->
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         <h1 class="h3 mb-0 text-gray-800"><?php echo $Texto_NomeDaPagina ?></h1>
@@ -70,14 +64,12 @@
                                 &nbsp
                                 <div><button name="submit" type="submit" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-chart-line fa-sm text-white-10"></i> Visualizar Dados</button></div>
                             </div>
-
                         </form>
 
                         <?php
-                            // Converte a data em timestamp
-                            $DataInicio = strtotime($_POST['DataInicio']);
-//                            echo "<br>";
-                            $DataTermino = strtotime($_POST['DataTermino']);
+
+                            echo $DataInicio = strtotime($_POST['DataInicio']);
+                            echo $DataTermino = strtotime($_POST['DataTermino']);
 
                             // SQL Conta Capacitados
                             $SQL_ContaCapacitados = "
@@ -101,8 +93,8 @@
                                 mdl_course_categories
                                 ON 
                                     mdl_course.category = mdl_course_categories.id
-                            WHERE
-                                mdl_role_assignments.timemodified BETWEEN '$DataInicio' AND '$DataTermino'
+                            --WHERE
+                                --mdl_role_assignments.timemodified BETWEEN '$DataInicio' AND '$DataTermino'
                             ";
                             $ContaCapacitados = $DB->count_records_sql($SQL_ContaCapacitados);
 
@@ -200,7 +192,7 @@
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                            <div class="font-weight-bold text-primary text-uppercase mb-1">
                                                 Colaboradores Capacitados</div>
                                             <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $ContaCapacitados ?></div>
                                         </div>
@@ -218,7 +210,7 @@
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                            <div class="font-weight-bold text-success text-uppercase mb-1">
                                                 Cursos</div>
                                             <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo $ContaCategorias ?></div>
                                         </div>
