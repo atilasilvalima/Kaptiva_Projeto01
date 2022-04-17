@@ -175,9 +175,7 @@
                                 mdl_course_categories.name ASC
                             ";
                             $RES_ListaCategoriasHoras = $DB->get_records_sql($SQL_ListaCategorias);
-
                         ?>
-
                     </div>
 
                     <br>
@@ -185,7 +183,6 @@
                     <!-- Row Card -->
                     <div class="row">
                         <!-- Cards - BEGIN -->
-
                         <!-- Colaboradores Capacitados -->
                         <div class="col-xl-6 col-md-6 mb-4">
                             <div class="card border-left-primary shadow h-100 py-2">
@@ -226,11 +223,9 @@
 
                     <!-- Row Dados Concluídos - BEGIN -->
                     <div class="row">
-
                         <!-- Tabela Concluídos -->
                         <div class="col-xl-12 col-lg-12">
                             <div class="card shadow mb-4">
-
                                 <!-- Tabela de Dado - BEGIN -->
                                 <div class="card shadow mb-4">
                                     <div class="card-header py-3">
@@ -249,70 +244,69 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                        <?php
-//                                                            while ($RowCategorias = pg_fetch_array($RES_ListaCategorias)) {
-                                                            foreach ($RES_ListaCategorias as $Categoria) {
-                                                                echo "<tr>";
-                                                                $Id_Categoria = $Categoria->id;
-                                                                echo "<td>" . $Categoria->name. "</td>";
+                                                    <?php
+                                                        foreach ($RES_ListaCategorias as $Categoria) {
+                                                            echo "<tr>";
+                                                            $Id_Categoria = $Categoria->id;
+                                                            echo "<td>" . $Categoria->name. "</td>";
 
-                                                                // SQL Conta Matriculas Por Categoria OK
-                                                                $SQL_ContaMatriculas = "
-                                                                    SELECT
-                                                                        COUNT(mdl_role_assignments.id)
-                                                                    FROM
-                                                                        mdl_role_assignments
-                                                                        INNER JOIN
-                                                                        mdl_context
-                                                                        ON
-                                                                            mdl_role_assignments.contextid = mdl_context.id
-                                                                        INNER JOIN
-                                                                        mdl_course
-                                                                        ON
-                                                                            mdl_context.instanceid = mdl_course.id
-                                                                    WHERE category = $Id_Categoria
-                                                                ";
-                                                                $ContaMatriculas = $DB->count_records_sql($SQL_ContaMatriculas);
+                                                            // SQL Conta Matriculas Por Categoria OK
+                                                            $SQL_ContaMatriculas = "
+                                                                SELECT
+                                                                    COUNT(mdl_role_assignments.id)
+                                                                FROM
+                                                                    mdl_role_assignments
+                                                                    INNER JOIN
+                                                                    mdl_context
+                                                                    ON
+                                                                        mdl_role_assignments.contextid = mdl_context.id
+                                                                    INNER JOIN
+                                                                    mdl_course
+                                                                    ON
+                                                                        mdl_context.instanceid = mdl_course.id
+                                                                WHERE category = $Id_Categoria
+                                                            ";
+                                                            $ContaMatriculas = $DB->count_records_sql($SQL_ContaMatriculas);
 
-                                                                echo "<td>".$ContaMatriculas."</td>";
+                                                            echo "<td>".$ContaMatriculas."</td>";
 
-                                                                // % de Matriculas com base no total
-                                                                $PorcMatricula = (100*$ContaMatriculas)/$TotalMatriculas;
-                                                                $PorcMatricula = number_format($PorcMatricula,2,",",".");
-                                                                echo "<td>".$PorcMatricula."%</td>";
+                                                            // % de Matriculas com base no total
+                                                            $PorcMatricula = (100*$ContaMatriculas)/$TotalMatriculas;
+                                                            $PorcMatricula = number_format($PorcMatricula,2,",",".");
+                                                            echo "<td>".$PorcMatricula."%</td>";
 
-                                                                // SQL Conta Concluídos OK
-                                                                $SQL_ContaConcluidosCategoria = "
-                                                                    SELECT
-                                                                        COUNT(mdl_course_categories.id)
-                                                                    FROM
-                                                                        mdl_grade_items
-                                                                        INNER JOIN
-                                                                        mdl_grade_grades
-                                                                        ON
-                                                                            mdl_grade_items.id = mdl_grade_grades.itemid
-                                                                        INNER JOIN
-                                                                        mdl_course
-                                                                        ON
-                                                                            mdl_grade_items.courseid = mdl_course.id
-                                                                        INNER JOIN
-                                                                        mdl_course_categories
-                                                                        ON
-                                                                            mdl_course.category = mdl_course_categories.id
-                                                                    WHERE
-                                                                        mdl_grade_items.itemtype = 'course' AND
-                                                                        mdl_course_categories.id = $Id_Categoria
-                                                                ";
-                                                                $ContaConcluidosCategoria = $DB->count_records_sql($SQL_ContaConcluidosCategoria);
-                                                                echo "<td>".$ContaConcluidosCategoria."</td>";
+                                                            // SQL Conta Concluídos OK
+                                                            $SQL_ContaConcluidosCategoria = "
+                                                                SELECT
+                                                                    COUNT(mdl_course_categories.id)
+                                                                FROM
+                                                                    mdl_grade_items
+                                                                    INNER JOIN
+                                                                    mdl_grade_grades
+                                                                    ON
+                                                                        mdl_grade_items.id = mdl_grade_grades.itemid
+                                                                    INNER JOIN
+                                                                    mdl_course
+                                                                    ON
+                                                                        mdl_grade_items.courseid = mdl_course.id
+                                                                    INNER JOIN
+                                                                    mdl_course_categories
+                                                                    ON
+                                                                        mdl_course.category = mdl_course_categories.id
+                                                                WHERE
+                                                                    mdl_grade_items.itemtype = 'course' AND
+                                                                    mdl_course_categories.id = $Id_Categoria
+                                                            ";
+                                                            $ContaConcluidosCategoria = $DB->count_records_sql($SQL_ContaConcluidosCategoria);
+                                                            echo "<td>".$ContaConcluidosCategoria."</td>";
 
-                                                                // % de Concluídos com base no total
-                                                                $PorcConcluidos = (100*$ContaConcluidosCategoria)/$ContaTotalConcluidos;
-                                                                $PorcConcluidos = number_format($PorcConcluidos,2,",",".");
-                                                                echo "<td>".$PorcConcluidos."%</td>";
-                                                        }
-                                                            echo "</tr>";
-                                                        ?>
+                                                            // % de Concluídos com base no total
+                                                            $PorcConcluidos = (100*$ContaConcluidosCategoria)/$ContaTotalConcluidos;
+                                                            $PorcConcluidos = number_format($PorcConcluidos,2,",",".");
+                                                            echo "<td>".$PorcConcluidos."%</td>";
+                                                    }
+                                                        echo "</tr>";
+                                                    ?>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -321,17 +315,14 @@
                                 <!-- Tabela de Dado - END -->
                             </div>
                         </div>
-
                     </div>
                     <!-- Row - Dados Concluídos - END -->
 
                     <!-- Row Dados Horas - BEGIN -->
                     <div class="row">
-
                         <!-- Tabela Concluídos -->
                         <div class="col-xl-12 col-lg-12">
                             <div class="card shadow mb-4">
-
                                 <!-- Tabela de Dado - BEGIN -->
                                 <div class="card shadow mb-4">
                                     <div class="card-header py-3">
@@ -349,7 +340,6 @@
                                                 </thead>
                                                 <tbody>
                                                     <?php
-//                                                        while ($RowCategoriasHoras = pg_fetch_array($RES_ListaCategoriasHoras)) {
                                                         foreach ($RES_ListaCategoriasHoras as $ListaCategoriasHoras) {
                                                             echo "<tr>";
                                                             $Id_Categoria = $ListaCategoriasHoras->id;
@@ -367,13 +357,10 @@
                                 <!-- Tabela de Dado - END -->
                             </div>
                         </div>
-
                     </div>
                     <!-- Row - Dados Horas - END -->
-
                 </div>
                 <!-- /.container-fluid -->
-
             </div>
             <!-- End of Main Content -->
 
@@ -383,7 +370,6 @@
 
         </div>
         <!-- End of Content Wrapper -->
-
     </div>
     <!-- End of Page Wrapper -->
 
@@ -397,5 +383,4 @@
     <!-- Footer JS -->
 
 </body>
-
 </html>
