@@ -80,7 +80,7 @@
                 </div>
 
 
-                    <?php
+                <?php
 
                     if ((empty($DataInicio)) AND (empty($DataTermino))) {
                         echo "
@@ -95,112 +95,120 @@
 
                     // SQL Conta Capacitados
                     $SQL_ContaCapacitados = "
-                            SELECT
-                                COUNT (mdl_user.id)
-                            FROM
-                                mdl_user
-                                INNER JOIN
-                                mdl_role_assignments
-                                ON 
-                                    mdl_user.id = mdl_role_assignments.userid
-                                INNER JOIN
-                                mdl_context
-                                ON 
-                                    mdl_role_assignments.contextid = mdl_context.id
-                                INNER JOIN
-                                mdl_course
-                                ON 
-                                    mdl_context.instanceid = mdl_course.id
-                                INNER JOIN
-                                mdl_course_categories
-                                ON 
-                                    mdl_course.category = mdl_course_categories.id
-                            WHERE
-                                mdl_role_assignments.timemodified BETWEEN ? AND ?
-                            ";
+                        SELECT
+                            COUNT (mdl_user.id)
+                        FROM
+                            mdl_user
+                            INNER JOIN
+                            mdl_role_assignments
+                            ON 
+                                mdl_user.id = mdl_role_assignments.userid
+                            INNER JOIN
+                            mdl_context
+                            ON 
+                                mdl_role_assignments.contextid = mdl_context.id
+                            INNER JOIN
+                            mdl_course
+                            ON 
+                                mdl_context.instanceid = mdl_course.id
+                            INNER JOIN
+                            mdl_course_categories
+                            ON 
+                                mdl_course.category = mdl_course_categories.id
+                        WHERE
+                            mdl_role_assignments.timemodified BETWEEN ? AND ?
+                    ";
                     $ContaCapacitados = $DB->count_records_sql($SQL_ContaCapacitados, [$DataInicio,$DataTermino]);
 
 
-                    // SQL Conta Categorias
+                    // SQL Conta Categorias (Melhor não filtrar por data)
                     $SQL_ContaCategorias = "
-                                SELECT
-                                    COUNT(mdl_course_categories.name)
-                                FROM
-                                    mdl_course_categories
-                            ";
+                        SELECT
+                            COUNT(mdl_course_categories.name)
+                        FROM
+                            mdl_course_categories
+                    ";
                     $ContaCategorias = $DB->count_records_sql($SQL_ContaCategorias);
 
 
-                    // SQL Lista Categorias
+                    // SQL Lista Categorias (Melhor não filtrar por data)
                     $SQL_ListaCategorias = "
-                            SELECT
-                                mdl_course_categories.id,
-                                mdl_course_categories.name
-                            FROM
-                                mdl_course_categories
-                            ORDER BY
-                                mdl_course_categories.name ASC
-                            ";
+                        SELECT
+                            mdl_course_categories.id,
+                            mdl_course_categories.name
+                        FROM
+                            mdl_course_categories
+                        ORDER BY
+                            mdl_course_categories.name ASC
+                    ";
                     $RES_ListaCategorias = $DB->get_records_sql($SQL_ListaCategorias);
 
 
                     // SQL Total de Matriculas
+                    // Conta total de matricula pela data, melhor seria pegar o total do sistema, sem data
                     $SQL_TotalMatriculas = "
-                            SELECT
-                                COUNT(mdl_role_assignments.id)
-                            FROM
-                                mdl_role_assignments
-                                INNER JOIN
-                                mdl_context
-                                ON 
-                                    mdl_role_assignments.contextid = mdl_context.id
-                                INNER JOIN
-                                mdl_course
-                                ON 
-                                    mdl_context.instanceid = mdl_course.id                                                             
-                            ";
-                    $TotalMatriculas = $DB->count_records_sql($SQL_TotalMatriculas);
+                        SELECT
+                            COUNT(mdl_role_assignments.id)
+                        FROM
+                            mdl_role_assignments
+                            INNER JOIN
+                            mdl_context
+                            ON 
+                                mdl_role_assignments.contextid = mdl_context.id
+                            INNER JOIN
+                            mdl_course
+                            ON 
+                                mdl_context.instanceid = mdl_course.id
+                        WHERE
+                            mdl_role_assignments.timemodified BETWEEN ? AND ?
+                    ";
+                    $TotalMatriculas = $DB->count_records_sql($SQL_TotalMatriculas, [$DataInicio,$DataTermino]);
 
 
-                    // SQL Conta Total de Concluídos
+                    // SQL Conta Total de Concluído
+                    // Conta total de concluidos pela data, melhor seria pegar o total do sistema, sem data
                     $SQL_ContaTotalConcluidos = "
-                            SELECT
-                                COUNT(mdl_course_categories.id)
-                            FROM
-                                mdl_grade_items
-                                INNER JOIN
-                                mdl_grade_grades
-                                ON 
-                                    mdl_grade_items.id = mdl_grade_grades.itemid
-                                INNER JOIN
-                                mdl_course
-                                ON 
-                                    mdl_grade_items.courseid = mdl_course.id
-                                INNER JOIN
-                                mdl_course_categories
-                                ON 
-                                    mdl_course.category = mdl_course_categories.id
-                            WHERE
-                                mdl_grade_items.itemtype = 'course' 
-                            ";
-                    $ContaTotalConcluidos = $DB->count_records_sql($SQL_ContaTotalConcluidos);
+                        SELECT
+                            COUNT(mdl_course_categories.id)
+                        FROM
+                            mdl_grade_items
+                            INNER JOIN
+                            mdl_grade_grades
+                            ON 
+                                mdl_grade_items.id = mdl_grade_grades.itemid
+                            INNER JOIN
+                            mdl_course
+                            ON 
+                                mdl_grade_items.courseid = mdl_course.id
+                            INNER JOIN
+                            mdl_course_categories
+                            ON 
+                                mdl_course.category = mdl_course_categories.id
+                        WHERE
+                            mdl_grade_items.itemtype = 'course'  AND
+                            mdl_grade_grades.timemodified BETWEEN ? AND ?
+                    ";
+                    $ContaTotalConcluidos = $DB->count_records_sql($SQL_ContaTotalConcluidos,[$DataInicio,$DataTermino]);
 
 
                     // SQL Lista Categorias Horas
                     $SQL_ListaCategoriasHoras = "
-                            SELECT
-                                mdl_course_categories.id,
-                                mdl_course_categories.name
-                            FROM
-                                mdl_course_categories
-                            ORDER BY 
-                                mdl_course_categories.name ASC
-                            ";
+                        SELECT
+                            mdl_course_categories.id,
+                            mdl_course_categories.name
+                        FROM
+                            mdl_course_categories
+                        ORDER BY 
+                            mdl_course_categories.name ASC
+                    ";
                     $RES_ListaCategoriasHoras = $DB->get_records_sql($SQL_ListaCategorias);
-                    ?>
+                ?>
 
 
                 <br>
+                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                        <h1 class="h3 mb-0 text-gray-800">Período da consulta:<strong> <?php echo $DataInicial ."  à ". $DataFinal ?></strong></h1>
+                    </div>
 
                 <!-- Row Card -->
                 <div class="row">
@@ -274,21 +282,22 @@
 
                                                 // SQL Conta Matriculas Por Categoria OK
                                                 $SQL_ContaMatriculas = "
-                                                                SELECT
-                                                                    COUNT(mdl_role_assignments.id)
-                                                                FROM
-                                                                    mdl_role_assignments
-                                                                    INNER JOIN
-                                                                    mdl_context
-                                                                    ON
-                                                                        mdl_role_assignments.contextid = mdl_context.id
-                                                                    INNER JOIN
-                                                                    mdl_course
-                                                                    ON
-                                                                        mdl_context.instanceid = mdl_course.id
-                                                                WHERE category = $Id_Categoria
-                                                            ";
-                                                $ContaMatriculas = $DB->count_records_sql($SQL_ContaMatriculas);
+                                                    SELECT
+                                                        COUNT(mdl_role_assignments.id)
+                                                    FROM
+                                                        mdl_role_assignments
+                                                        INNER JOIN
+                                                        mdl_context
+                                                        ON
+                                                            mdl_role_assignments.contextid = mdl_context.id
+                                                        INNER JOIN
+                                                        mdl_course
+                                                        ON
+                                                            mdl_context.instanceid = mdl_course.id
+                                                    WHERE category = $Id_Categoria AND 
+                                                          mdl_role_assignments.timemodified BETWEEN ? AND ?
+                                                ";
+                                                $ContaMatriculas = $DB->count_records_sql($SQL_ContaMatriculas,[$DataInicio,$DataTermino]);
 
                                                 echo "<td>".$ContaMatriculas."</td>";
 
@@ -299,27 +308,28 @@
 
                                                 // SQL Conta Concluídos OK
                                                 $SQL_ContaConcluidosCategoria = "
-                                                                SELECT
-                                                                    COUNT(mdl_course_categories.id)
-                                                                FROM
-                                                                    mdl_grade_items
-                                                                    INNER JOIN
-                                                                    mdl_grade_grades
-                                                                    ON
-                                                                        mdl_grade_items.id = mdl_grade_grades.itemid
-                                                                    INNER JOIN
-                                                                    mdl_course
-                                                                    ON
-                                                                        mdl_grade_items.courseid = mdl_course.id
-                                                                    INNER JOIN
-                                                                    mdl_course_categories
-                                                                    ON
-                                                                        mdl_course.category = mdl_course_categories.id
-                                                                WHERE
-                                                                    mdl_grade_items.itemtype = 'course' AND
-                                                                    mdl_course_categories.id = $Id_Categoria
-                                                            ";
-                                                $ContaConcluidosCategoria = $DB->count_records_sql($SQL_ContaConcluidosCategoria);
+                                                        SELECT
+                                                            COUNT(mdl_course_categories.id)
+                                                        FROM
+                                                            mdl_grade_items
+                                                            INNER JOIN
+                                                            mdl_grade_grades
+                                                            ON
+                                                                mdl_grade_items.id = mdl_grade_grades.itemid
+                                                            INNER JOIN
+                                                            mdl_course
+                                                            ON
+                                                                mdl_grade_items.courseid = mdl_course.id
+                                                            INNER JOIN
+                                                            mdl_course_categories
+                                                            ON
+                                                                mdl_course.category = mdl_course_categories.id
+                                                        WHERE
+                                                            mdl_grade_items.itemtype = 'course' AND
+                                                            mdl_course_categories.id = $Id_Categoria AND
+                                                            mdl_grade_grades.timemodified BETWEEN ? AND ?
+                                                ";
+                                                $ContaConcluidosCategoria = $DB->count_records_sql($SQL_ContaConcluidosCategoria,[$DataInicio,$DataTermino]);
                                                 echo "<td>".$ContaConcluidosCategoria."</td>";
 
                                                 // % de Concluídos com base no total
