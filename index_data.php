@@ -391,12 +391,18 @@
                 <!-- Row - Dados Horas - END -->
 
                 <!-- Row - Botão Gerar PDF - BEGIN -->
-                        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                        <div class="d-sm-flex align-items-end mb-4">
                             <h1 class="h3 mb-0 text-gray-800"></h1>
                             <form action="GerarPdf.php" method="POST">
                                 <input TYPE="hidden" name="DataInicioPdf" value="<?php echo $DataInicio ?>">
                                 <input type="hidden" name="DataTerminoPdf" value="<?php echo $DataTermino ?>">
-                                <button name="submit" type="submit" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm"><i class="fas fa-download"></i> Gerar Pdf</button>
+                                <button name="submit" type="submit" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm"><i class="fas fa-download"></i> Gerar PDF</button>
+                            </form>
+                            &nbsp;
+                            <form action="GerarPlanilha.php" method="POST">
+                                <input TYPE="hidden" name="DataInicioPdf" value="<?php echo $DataInicio ?>">
+                                <input type="hidden" name="DataTerminoPdf" value="<?php echo $DataTermino ?>">
+                                <button name="submit" type="submit" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm"><i class="fas fa-file-excel"></i> Gerar XLS</button>
                             </form>
                         </div>
                 <!-- Row - Botão Gerar PDF - END -->
