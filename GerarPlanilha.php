@@ -17,7 +17,8 @@
     global $DB;
 
     // Pega a data atual
-    $DataAtual = date('d/m/Y H:i:s');
+
+    $DataAtual = date(U);
 
     // Datas para o calculo
     $DataInicioXls = $_POST['DataInicioPdf'];
@@ -52,9 +53,11 @@ $SQL_ContaCapacitados = "
             mdl_role_assignments.timemodified BETWEEN ? AND ?
     ";
 $ContaCapacitados = $DB->count_records_sql($SQL_ContaCapacitados, [$DataInicioXls,$DataTerminoXls]);
+//
+//
+//    $arquivo = 'planilhactts.xls';
 
-
-    $arquivo = 'planilhactts.xls';
+    $NomeArquivo = $DataAtual.'.xls';
 
     // Criamos uma tabela HTML com o formato da planilha
     $html = '';
@@ -71,7 +74,7 @@ $ContaCapacitados = $DB->count_records_sql($SQL_ContaCapacitados, [$DataInicioXl
     header ("Cache-Control: no-cache, must-revalidate");
     header ("Pragma: no-cache");
     header ("Content-type: application/x-msexcel");
-    header ("Content-Disposition: attachment; filename=\"{$arquivo}\"" );
+    header ("Content-Disposition: attachment; filename=\"{$NomeArquivo}\"" );
     header ("Content-Description: PHP Generated Data" );
     // Envia o conteúdo do arquivo
     echo $html;
